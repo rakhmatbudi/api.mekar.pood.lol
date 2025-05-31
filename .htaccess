@@ -1,0 +1,8 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/komuni40/02-api/api.mekar.id"
+PassengerBaseURI "/"
+PassengerNodejs "/home/komuni40/nodevenv/02-api/api.mekar.id/18/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerAppLogFile "/home/komuni40/logs/api.mekar.id"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
