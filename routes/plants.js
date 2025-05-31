@@ -15,10 +15,11 @@ router.get('/', async (req, res) => {
         p.name,
         p.last_media_changed,
         p.code,
-        p.location,          -- Added new column
-        p.pot_description,   -- Added new column
-        p.watering_frequency, -- Added new column
-        p.notes              -- Added new column
+        p.location,          
+        p.pot_description,   
+        p.watering_frequency, 
+        p.notes,
+        p.photo_path
       FROM
         plant p
       LEFT JOIN
@@ -45,10 +46,11 @@ router.get('/:id', async (req, res) => {
         p.name,
         p.last_media_changed,
         p.code,
-        p.location,          -- Added new column
-        p.pot_description,   -- Added new column
-        p.watering_frequency, -- Added new column
-        p.notes              -- Added new column
+        p.location,          
+        p.pot_description,   
+        p.watering_frequency, 
+        p.notes,
+        p.photo_path
       FROM
         plant p
       LEFT JOIN
@@ -69,7 +71,7 @@ router.get('/:id', async (req, res) => {
 // --- CREATE New Plant ---
 router.post('/', async (req, res) => {
   // Destructure all expected fields, including the new ones
-  const { category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes } = req.body;
+  const { category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes, photo_path } = req.body;
 
   if (!name) {
     return res.status(400).json({ message: 'Plant name is required' });
@@ -82,12 +84,13 @@ router.post('/', async (req, res) => {
         name,
         last_media_changed,
         code,
-        location,           -- Added new column
-        pot_description,    -- Added new column
-        watering_frequency, -- Added new column
-        notes               -- Added new column
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes]
+        location,           
+        pot_description,    
+        watering_frequency, 
+        notes,
+        photo_path
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes, photo_path]
     );
 
     // After creating, fetch the full plant details including category name
@@ -103,7 +106,8 @@ router.post('/', async (req, res) => {
         p.location,
         p.pot_description,
         p.watering_frequency,
-        p.notes
+        p.notes,
+        p.photo_path
       FROM
         plant p
       LEFT JOIN
@@ -123,7 +127,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   // Destructure all expected fields, including the new ones
-  const { category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes } = req.body;
+  const { category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes, photo_path } = req.body;
 
   try {
     const result = await db.query(
@@ -132,12 +136,13 @@ router.put('/:id', async (req, res) => {
         name = $2,
         last_media_changed = $3,
         code = $4,
-        location = $5,           -- Added new column
-        pot_description = $6,    -- Added new column
-        watering_frequency = $7, -- Added new column
-        notes = $8               -- Added new column
-      WHERE id = $9 RETURNING *`,
-      [category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes, id]
+        location = $5,           
+        pot_description = $6,    
+        watering_frequency = $7, 
+        notes = $8,
+        photo_path = $9,
+      WHERE id = $10 RETURNING *`,
+      [category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes, photo_path, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Plant not found' });
@@ -156,7 +161,8 @@ router.put('/:id', async (req, res) => {
         p.location,
         p.pot_description,
         p.watering_frequency,
-        p.notes
+        p.notes,
+        p.photo_path
       FROM
         plant p
       LEFT JOIN
