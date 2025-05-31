@@ -11,10 +11,14 @@ router.get('/', async (req, res) => {
       SELECT
         p.id,
         p.category_id,
-        c.name AS category_name, -- Select category name and alias it
+        c.name AS category_name,
         p.name,
         p.last_media_changed,
-        p.code
+        p.code,
+        p.location,          -- Added new column
+        p.pot_description,   -- Added new column
+        p.watering_frequency, -- Added new column
+        p.notes              -- Added new column
       FROM
         plant p
       LEFT JOIN
@@ -37,10 +41,14 @@ router.get('/:id', async (req, res) => {
       SELECT
         p.id,
         p.category_id,
-        c.name AS category_name, -- Select category name and alias it
+        c.name AS category_name,
         p.name,
         p.last_media_changed,
-        p.code
+        p.code,
+        p.location,          -- Added new column
+        p.pot_description,   -- Added new column
+        p.watering_frequency, -- Added new column
+        p.notes              -- Added new column
       FROM
         plant p
       LEFT JOIN
@@ -60,7 +68,8 @@ router.get('/:id', async (req, res) => {
 
 // --- CREATE New Plant ---
 router.post('/', async (req, res) => {
-  const { category_id, name, last_media_changed, code } = req.body;
+  // Destructure all expected fields, including the new ones
+  const { category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes } = req.body;
 
   if (!name) {
     return res.status(400).json({ message: 'Plant name is required' });
@@ -68,8 +77,17 @@ router.post('/', async (req, res) => {
 
   try {
     const result = await db.query(
-      'INSERT INTO plant (category_id, name, last_media_changed, code) VALUES ($1, $2, $3, $4) RETURNING *',
-      [category_id, name, last_media_changed, code]
+      `INSERT INTO plant (
+        category_id,
+        name,
+        last_media_changed,
+        code,
+        location,           -- Added new column
+        pot_description,    -- Added new column
+        watering_frequency, -- Added new column
+        notes               -- Added new column
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes]
     );
 
     // After creating, fetch the full plant details including category name
@@ -81,10 +99,14 @@ router.post('/', async (req, res) => {
         c.name AS category_name,
         p.name,
         p.last_media_changed,
-        p.code
+        p.code,
+        p.location,
+        p.pot_description,
+        p.watering_frequency,
+        p.notes
       FROM
         plant p
-      INNER JOIN
+      LEFT JOIN
         category c ON p.category_id = c.id
       WHERE
         p.id = $1
@@ -100,12 +122,22 @@ router.post('/', async (req, res) => {
 // --- UPDATE Plant by ID ---
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { category_id, name, last_media_changed, code } = req.body;
+  // Destructure all expected fields, including the new ones
+  const { category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes } = req.body;
 
   try {
     const result = await db.query(
-      'UPDATE plant SET category_id = $1, name = $2, last_media_changed = $3, code = $4 WHERE id = $5 RETURNING *',
-      [category_id, name, last_media_changed, code, id]
+      `UPDATE plant SET
+        category_id = $1,
+        name = $2,
+        last_media_changed = $3,
+        code = $4,
+        location = $5,           -- Added new column
+        pot_description = $6,    -- Added new column
+        watering_frequency = $7, -- Added new column
+        notes = $8               -- Added new column
+      WHERE id = $9 RETURNING *`,
+      [category_id, name, last_media_changed, code, location, pot_description, watering_frequency, notes, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Plant not found' });
@@ -120,7 +152,11 @@ router.put('/:id', async (req, res) => {
         c.name AS category_name,
         p.name,
         p.last_media_changed,
-        p.code
+        p.code,
+        p.location,
+        p.pot_description,
+        p.watering_frequency,
+        p.notes
       FROM
         plant p
       LEFT JOIN
